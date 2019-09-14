@@ -1,7 +1,6 @@
 import tensorflow as tf
 import numpy as np
 import os
-import matplotlib.pyplot as plt
 
 def min_max_scaler(data):
     numerator = data-np.min(data, 0)
@@ -18,8 +17,8 @@ else:
 data_path = os.getcwd()
 data_path = data_path[0: data_path.rfind('/')] + '/data/heart.csv'
 
-# loading the heart data
-heart_data = np.loadtxt(data_path, delimiter=',', dtype=np.float32)
+# loading the heart data and removing the titles
+heart_data = np.loadtxt(data_path, delimiter=',', dtype=np.float32, skiprows=1)
 
 for data in heart_data:
     print(data[0])
