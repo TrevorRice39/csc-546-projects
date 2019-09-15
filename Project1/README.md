@@ -8,7 +8,7 @@ Download this repository as a .zip file, or clone it into your own repository.
 Before running, you must have installed Python 3.6, Tensorflow, and Numpy.
 
 ## Usage
-Use Python3 to execute the python file "main.py" inside of the src folder
+Use Python3 to execute the python file "main.py" inside of the src folder  
 In terminal:
 ```
 python3 Project1/src/main.py

@@ -1,17 +1,13 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 import tensorflow as tf
 import numpy as np
-import os
 
+# function used for normalizing our data using min max
 def min_max_scaler(data):
     numerator = data-np.min(data, 0)
     denominator = np.max(data, 0) - np.min(data, 0)
     return numerator/denominator+1e-7
-
-# clearing the warnings from tensorflow and numpy
-if os.name == 'nt': 
-    os.system('cls') # windows
-else: 
-    os.system('clear') # mac or linux
 
 # creating the data path
 data_path = os.getcwd()
@@ -20,17 +16,15 @@ data_path = data_path[0: data_path.rfind('/')] + '/data/heart.csv'
 # loading the heart data and removing the titles
 heart_data = np.loadtxt(data_path, delimiter=',', dtype=np.float32, skiprows=1)
 
-for data in heart_data:
-    print(data[0])
 # checking the shape of the heart data
 print("Shape of", data_path[data_path.rfind('/')+1:], "-", heart_data.shape, '\n') # (303, 14)
 
 # slicing the data into our input and output
 heart_data_x = heart_data[:, 0:-1]
-heart_data_x = min_max_scaler(heart_data_x)
+normalize_list = [0, 3, 4, 7, 9] # columns to normalize
+for num in normalize_list:
+    heart_data_x[:, num] = min_max_scaler(heart_data_x[:, num]) # normalization using min max scaler
 heart_data_y = heart_data[:, [-1]]
-
-print(type(heart_data))
 
 # storing the shape of the x and y data
 x_shape = heart_data_x.shape
@@ -72,7 +66,7 @@ hypothesis = tf.sigmoid(tf.matmul(x, W)+b)
 cost = -1 * tf.reduce_mean(y*tf.math.log(hypothesis)+(1-y)*tf.math.log(1-hypothesis))
 
 # minimizing the cost with the gradient descent algorithm
-train = tf.train.GradientDescentOptimizer(learning_rate=0.01).minimize(cost)
+train = tf.compat.v1.train.GradientDescentOptimizer(learning_rate=0.01).minimize(cost)
 
 # 1 if H(x) > .5, 0 if H(x) <= .5
 predicted = tf.cast(hypothesis>0.5, dtype=tf.float32)
