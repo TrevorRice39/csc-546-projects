@@ -8,6 +8,7 @@ from os import listdir
 from os.path import isfile, join
 from scipy import misc
 from matplotlib.image import imread
+from matplotlib import pyplot as plt
 path = os.getcwd()
 parasitized_path = path[0 : path.rfind('/')] + '/data/Parasitized'
 parasitized_images = [f for f in listdir(parasitized_path) if isfile(join(parasitized_path, f))]
@@ -22,8 +23,8 @@ resized_u_images = []
 len_p = len(parasitized_images)
 len_u = len(uninfected_images)
 image_size = 128
-len_p = 10
-len_u = 10
+len_p = 1000
+len_u = 1000
 for i in range(len_p):
     img = imread(parasitized_path + parasitized_images[i])
     img = np.resize(img, (128, 128))
@@ -75,11 +76,12 @@ class Model:
 
 		self.cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits = self.logits, labels = self.Y))
 		self.optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(self.cost)
+		self.prediction = tf.argmax(self.logits, 1)
 		self.correct_prediction = tf.equal(tf.argmax(self.logits, 1), tf.argmax(self.Y, 1))
 		self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32))
 
 	def predict(self, x_test, training=False):
-		return self.sess.run(self.logits, feed_dict={self.X: x_test, self.Y: [[1, 1]], self.training: training})
+		return self.sess.run(self.prediction, feed_dict={self.X: x_test, self.Y: [[1, 1]], self.training: training})
 	def get_accuracy(self, x_test, y_test, training=False):
 		return self.sess.run(self.accuracy, feed_dict={self.X: x_test, self.Y: y_test, self.training: training})
 	def train(self, x_data,  y_data, training=True):
@@ -88,25 +90,63 @@ class Model:
 
 sess = tf.Session()
 m = Model(sess, "model1")
+data = resized_u_images + resized_p_images
+np.random.shuffle(data)
+train_data = data[0 : int(.7 * len(data))]
+test_data = data[int(.7 * len(data)) + 1 : ]
+sess.run(tf.global_variables_initializer())
+print(len(train_data))
+print(len(test_data))
+for epoch in range(training_epochs):
+	total_batch = int(len(train_data)/batch_size)
+	print(total_batch)
+	avg_cost = 0
+	x_data = []
+	y_data = []
+	for i in range(total_batch):
+		for x in range(total_batch * epoch + total_batch):
+			elem = train_data[x]
+			x_data.append(elem[0])
+			if elem[1] == 0:
+				y_data.append([1, 0])
+			else:
+				y_data.append([0, 1])
+	c, _ = m.train(x_data, y_data)
+	avg_cost += c / total_batch
+	print("Average cost = ", avg_cost, " for Epoch " , + epoch)
 
 x_data = []
 y_data = []
-for x in resized_u_images:
+for x in test_data:
 	x_data.append(x[0])
-	y_data.append([1, 0])
+	if x[1] == 0:
+		y_data.append([1, 0])
+	else:
+		y_data.append([0, 1])
+print("Accuracy: ", m.get_accuracy(x_data, y_data))
 
-x_data = np.array(x_data)
-y_data = np.array(y_data)
-print(x_data.shape)
-print(y_data)
-sess.run(tf.global_variables_initializer())
-m.train(x_data, y_data)
+# x_data = np.array(x_data)
+# y_data = np.array(y_data)
+# print(x_data.shape)
+# print(y_data)
 
-print('Accuracy', m.get_accuracy(x_data, y_data))
+# m.train(x_data, y_data)
 
-data = resized_p_images[0]
-p = m.predict([data[0]])
-print(p)
+# print('Accuracy', m.get_accuracy(x_data, y_data))
 
-p = m.predict([x_data[0]])
-print(p)
+# cont = "y"
+# i = 0
+# while cont == "y":
+	
+# 	data = resized_u_images[i]
+# 	plt.imshow(data[0])
+# 	plt.show()
+# 	p = m.predict([data[0]])
+# 	print(p, 0)
+
+# 	data = resized_p_images[i]
+# 	p = m.predict([data[0]])
+# 	print(p, 1)
+# 	i += 1
+	
+# 	cont = input("Continue? y or n")
