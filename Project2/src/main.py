@@ -3,7 +3,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 import numpy as np
 import random
-import imageio
 from os import listdir
 from os.path import isfile, join
 from scipy import misc
@@ -23,8 +22,8 @@ resized_u_images = []
 len_p = len(parasitized_images)
 len_u = len(uninfected_images)
 image_size = 128
-len_p = 1000
-len_u = 1000
+len_p = 10000
+len_u = 10000
 for i in range(len_p):
     img = imread(parasitized_path + parasitized_images[i])
     img = np.resize(img, (128, 128))
@@ -104,7 +103,7 @@ for epoch in range(training_epochs):
 	x_data = []
 	y_data = []
 	for i in range(total_batch):
-		for x in range(total_batch * epoch + total_batch):
+		for x in range(total_batch * epoch, total_batch * epoch + total_batch):
 			elem = train_data[x]
 			x_data.append(elem[0])
 			if elem[1] == 0:
