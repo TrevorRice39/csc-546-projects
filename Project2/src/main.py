@@ -22,8 +22,8 @@ resized_u_images = []
 len_p = len(parasitized_images)
 len_u = len(uninfected_images)
 image_size = 128
-len_p = 10000
-len_u = 10000
+len_p = 1000
+len_u = 1000
 for i in range(len_p):
     img = imread(parasitized_path + parasitized_images[i])
     img = np.resize(img, (128, 128))
@@ -39,7 +39,7 @@ for i in range(len_u):
 
 
 learning_rate = 0.001
-training_epochs = 15
+training_epochs = 3
 batch_size = 100
 
 keep_prob = tf.placeholder(tf.float32)
@@ -96,22 +96,25 @@ test_data = data[int(.7 * len(data)) + 1 : ]
 sess.run(tf.global_variables_initializer())
 print(len(train_data))
 print(len(test_data))
+i = 0
 for epoch in range(training_epochs):
 	total_batch = int(len(train_data)/batch_size)
 	print(total_batch)
 	avg_cost = 0
-	x_data = []
-	y_data = []
+	
 	for i in range(total_batch):
-		for x in range(total_batch * epoch, total_batch * epoch + total_batch):
-			elem = train_data[x]
+		x_data = []
+		y_data = []
+		for x in range(batch_size):
+			elem = train_data[i]
+			i += 1
 			x_data.append(elem[0])
 			if elem[1] == 0:
 				y_data.append([1, 0])
 			else:
 				y_data.append([0, 1])
-	c, _ = m.train(x_data, y_data)
-	avg_cost += c / total_batch
+		c, _ = m.train(x_data, y_data)
+		avg_cost += c / total_batch
 	print("Average cost = ", avg_cost, " for Epoch " , + epoch)
 
 x_data = []
